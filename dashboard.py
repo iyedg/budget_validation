@@ -6,7 +6,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_table
 
-from utils import get_root, load_budget, to_tree
+from budget_validation.utils import get_root, to_tree
+from budget_validation.loader import load_budget
 
 external_stylesheets = [
     dbc.themes.BOOTSTRAP,
