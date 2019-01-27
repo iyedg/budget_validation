@@ -1,19 +1,18 @@
 import anytree
 import dash
-import dash_core_components as dcc
-import dash_bootstrap_components as dbc
-import dash_html_components as html
 from dash.dependencies import Input, Output
-import dash_table
 
-from budget_validation.utils import get_root, to_tree
 from budget_validation.loader import load_budget
+from budget_validation.utils import get_root, to_tree
+from budget_validation.dashboard.layout import layout
 
-external_stylesheets = [
-    dbc.themes.BOOTSTRAP,
-    # "https://codepen.io/chriddyp/pen/bWLwgP.css",
-]
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
+app.scripts.config.serve_locally = True
+app.css.config.serve_locally = True
+
+app.layout = layout
+
+
 budget = load_budget()
 tree_root = get_root(to_tree(budget))
 rendered_tree = str(anytree.RenderTree(tree_root).by_attr())
@@ -35,57 +34,6 @@ def filter_budget(year=None, organization=None):
     ]
 
 
-organization_name_dropdown = dcc.Dropdown(
-    id="org-name", placeholder="Organization name", clearable=False
-)
-
-year_dropdown_options = [
-    {"label": val, "value": int(val)} for val in budget.year.unique()
-]
-year_dropdown = dcc.Dropdown(
-    id="year",
-    options=year_dropdown_options,
-    value=year_dropdown_options[0]["value"],
-    placeholder="Year",
-    clearable=False,
-)
-
-filter_row = html.Div(
-    dbc.Row(
-        [
-            dbc.Col(
-                dbc.FormGroup(
-                    [
-                        dbc.Label("Organization name", html_for="org-name"),
-                        organization_name_dropdown,
-                    ]
-                )
-            ),
-            dbc.Col(dbc.FormGroup([dbc.Label("Year", html_for="year"), year_dropdown])),
-        ]
-    )
-)
-
-datatable = dash_table.DataTable(
-    id="table",
-    columns=[
-        {"name": i, "id": i}
-        for i in budget.columns
-        if i not in ["year", "organization_name"]
-    ],
-    data=budget.to_dict("rows"),
-)
-
-app.layout = dbc.Container(
-    [
-        html.H1("Validation budget"),
-        filter_row,
-        html.Pre(children=rendered_tree, id="pre"),
-        dbc.Row(dbc.Col(datatable)),
-    ]
-)
-
-
 @app.callback(
     Output(component_id="org-name", component_property="options"),
     [Input(component_id="year", component_property="value")],
@@ -95,30 +43,38 @@ def update_organization_dropdown(year):
 
 
 @app.callback(
-    Output(component_id="pre", component_property="children"),
-    [
-        Input(component_id="year", component_property="value"),
-        Input(component_id="org-name", component_property="value"),
-    ],
+    Output(component_id="org-name", component_property="value"),
+    [Input(component_id="org-name", component_property="options")],
 )
-def update_pre(year, organization):
-    return str(
-        anytree.RenderTree(
-            get_root(
-                to_tree(
-                    filter_budget(year=year, organization=organization)
-                    .drop(columns=["year", "organization_name"])
-                    .pipe(
-                        lambda df: df.assign(
-                            budget_type_parent_name=df[
-                                "budget_type_parent_name"
-                            ].fillna("ميزانية الوزارة")
-                        )
-                    )
-                )
-            )
-        ).by_attr()
-    )
+def update_organization_dropdown_value(options):
+    return options[0]
+
+
+# @app.callback(
+#     Output(component_id="pre", component_property="children"),
+#     [
+#         Input(component_id="year", component_property="value"),
+#         Input(component_id="org-name", component_property="value"),
+#     ],
+# )
+# def update_pre(year, organization):
+#     return str(
+#         anytree.RenderTree(
+#             get_root(
+#                 to_tree(
+#                     filter_budget(year=year, organization=organization)
+#                     .drop(columns=["year", "organization_name"])
+#                     .pipe(
+#                         lambda df: df.assign(
+#                             budget_type_parent_name=df[
+#                                 "budget_type_parent_name"
+#                             ].fillna("ميزانية الوزارة")
+#                         )
+#                     )
+#                 )
+#             )
+#         ).by_attr()
+#     )
 
 
 @app.callback(
@@ -129,7 +85,8 @@ def update_pre(year, organization):
     ],
 )
 def update_datatable(year, organization):
-    return (
+
+    df = (
         filter_budget(year, organization)
         .drop(columns=["year", "organization_name"])
         .pipe(
@@ -139,8 +96,8 @@ def update_datatable(year, organization):
                 )
             )
         )
-        .to_dict("rows")
     )
+    return df.to_dict("rows")
 
 
 if __name__ == "__main__":
