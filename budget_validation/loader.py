@@ -13,13 +13,17 @@ def get_worksheet(worksheet_name):
     return spreadsheet.worksheet_by_title(worksheet_name)
 
 
+def get_worksheet_as_df(worksheet_name):
+    return pd.DataFrame(get_worksheet(worksheet_name).get_all_records())
+
+
 def load_budget():
     """
     Return a dataframe for budget validation
     TODO: improve API, make it DRY and general
     """
-    budget_type = pd.DataFrame(get_worksheet("budget_type").get_all_records())
-    budget_by_type = pd.DataFrame(get_worksheet("budget_by_type").get_all_records())
+    budget_type = get_worksheet_as_df("budget_type")
+    budget_by_type = get_worksheet_as_df("budget_by_type")
     budget = (
         pd.merge(
             left=budget_type,
