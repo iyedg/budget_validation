@@ -34,3 +34,9 @@ def to_tree(df):
 def get_root(tree_dict):
     root = tree_dict.popitem()[1].root
     return root
+
+
+def list_to_dropdown_options(lst):
+    return sorted(
+        [{"label": val, "value": val} for val in lst], key=lambda i: i["value"]
+    )
