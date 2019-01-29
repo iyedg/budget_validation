@@ -1,18 +1,21 @@
 import anytree
 import dash
-import pandas as pd
-from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
+import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
+import pandas as pd
+from dash.dependencies import Input, Output
 
 from budget_validation.dashboard.layout import (
+    get_datatable,
     get_organization_name_dropdown,
     get_year_dropdown,
-    get_datatable,
 )
 from budget_validation.loader import get_worksheet_as_df
+from budget_validation.tree import draw_tree
 from budget_validation.utils import clean_currency, list_to_dropdown_options
 
 
@@ -84,7 +87,9 @@ app.layout = dbc.Container(
             ]
         ),
         dbc.Row(dbc.Col(get_datatable(budget[budget.year == 2015]))),
-    ]
+        dbc.Row(dbc.Col(html.Img(id="graph", src="assets/graph.png", alt="Graph"))),
+    ],
+    fluid=True,
 )
 
 
@@ -126,6 +131,20 @@ def update_datatable(year, organization):
             )
         )
     return filtered_budget.to_dict("rows")
+
+
+@app.callback(
+    Output(component_id="graph", component_property="src"),
+    [Input(component_id="table", component_property="data")],
+)
+def update_graph(df):
+    df = pd.DataFrame(df)
+    return draw_tree(
+        df,
+        parent_name_column="budget_type_parent_name",
+        child_name_column="budget_type_name",
+        child_value_column="value",
+    )
 
 
 if __name__ == "__main__":

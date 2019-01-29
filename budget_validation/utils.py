@@ -1,6 +1,11 @@
-import pandas as pd
+import base64
+from io import BytesIO
+
+import arabic_reshaper
 import numpy as np
-import anytree
+import pandas as pd
+from bidi.algorithm import get_display
+import matplotlib.pyplot as plt
 
 
 def clean_currency(col):
@@ -11,32 +16,29 @@ def clean_currency(col):
     )
 
 
-def to_tree(df):
-    nodes = {}
-    for record in df.to_dict("records"):
-        child = record["budget_type_name"]
-        parent = record["budget_type_parent_name"]
-        # Parent has not been created yet
-        if nodes.get(parent) is None:
-            nodes[parent] = anytree.Node(parent)
-        parent = nodes.get(parent)
-
-        # Child already exists
-        if nodes.get(child) is not None:
-            child = nodes.get(child)
-            child.parent = parent
-            child.value = record["value"]
-        else:
-            nodes[child] = anytree.Node(child, parent=parent, value=record["value"])
-    return nodes
-
-
-def get_root(tree_dict):
-    root = tree_dict.popitem()[1].root
-    return root
-
-
 def list_to_dropdown_options(lst):
     return sorted(
         [{"label": val, "value": val} for val in lst], key=lambda i: i["value"]
     )
+
+
+def reshape(string):
+    return get_display(arabic_reshaper.reshape(string))
+
+
+# from https://github.com/4QuantOSS/DashIntro/blob/master/notebooks/Tutorial.ipynb
+def fig_to_uri(in_fig, close_all=True, **save_args):
+    # type: (plt.Figure) -> str
+    """
+    Save a figure as a URI
+    :param in_fig:
+    :return:
+    """
+    out_img = BytesIO()
+    in_fig.savefig(out_img, format="png", **save_args)
+    if close_all:
+        in_fig.clf()
+        plt.close("all")
+    out_img.seek(0)  # rewind file
+    encoded = base64.b64encode(out_img.read()).decode("ascii").replace("\n", "")
+    return "data:image/png;base64,{}".format(encoded)
