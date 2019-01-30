@@ -79,7 +79,21 @@ datatable = get_datatable(budget[budget.year == year_dropdown.value])
 app.layout = dbc.Container(
     [
         html.H1("Budget validation"),
-        dbc.Row([dbc.Col(year_dropdown), dbc.Col(organization_name_dropdown)]),
+        dbc.Row(
+            [
+                dbc.Col(
+                    dbc.FormGroup([dbc.Label("Year", html_for="year"), year_dropdown])
+                ),
+                dbc.Col(
+                    dbc.FormGroup(
+                        [
+                            dbc.Label("Organization name", html_for="organization"),
+                            organization_name_dropdown,
+                        ]
+                    )
+                ),
+            ]
+        ),
         dbc.Row(
             [
                 dbc.Col(datatable, width=6),

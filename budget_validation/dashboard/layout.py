@@ -5,11 +5,6 @@ import dash_table
 from budget_validation.utils import list_to_dropdown_options
 
 
-# year_dropdown_options = [
-#     {"label": val, "value": int(val)} for val in budget.year.unique()
-# ]
-
-
 def get_year_dropdown(years):
     years = list_to_dropdown_options(years)
     year_dropdown = dcc.Dropdown(
@@ -18,12 +13,6 @@ def get_year_dropdown(years):
         value=years[0]["value"],
         placeholder="Year",
         clearable=False,
-    )
-    group = dbc.FormGroup(
-        [
-            dbc.Label("Year", html_for="year"),
-            html.Div(id="year_dropdown_container", children=year_dropdown),
-        ]
     )
     return year_dropdown
 
@@ -36,12 +25,6 @@ def get_organization_name_dropdown(organization_names):
         clearable=False,
         options=organization_names,
         value=organization_names[0],
-    )
-    group = dbc.FormGroup(
-        [
-            dbc.Label("Organization name", html_for="organization"),
-            organization_name_dropdown,
-        ]
     )
 
     return organization_name_dropdown
