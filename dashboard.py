@@ -1,4 +1,3 @@
-import anytree
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -73,23 +72,21 @@ app.scripts.config.serve_locally = True
 app.css.config.serve_locally = True
 
 year_dropdown = get_year_dropdown(budget.year.unique())
+organization_name_dropdown = get_organization_name_dropdown(
+    budget[budget.year == year_dropdown.value].organization_name.dropna().unique()
+)
+datatable = get_datatable(budget[budget.year == year_dropdown.value])
 app.layout = dbc.Container(
     [
         html.H1("Budget validation"),
+        dbc.Row([dbc.Col(year_dropdown), dbc.Col(organization_name_dropdown)]),
         dbc.Row(
             [
-                dbc.Col(year_dropdown),
-                dbc.Col(
-                    get_organization_name_dropdown(
-                        budget[budget.year == 2015].organization_name.dropna().unique()
-                    )
-                ),
+                dbc.Col(datatable, width=6),
+                dbc.Col(html.Img(id="graph", alt="Graph"), width=6),
             ]
         ),
-        dbc.Row(dbc.Col(get_datatable(budget[budget.year == 2015]))),
-        dbc.Row(dbc.Col(html.Img(id="graph", src="assets/graph.png", alt="Graph"))),
-    ],
-    fluid=True,
+    ]
 )
 
 
