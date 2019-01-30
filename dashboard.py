@@ -75,7 +75,11 @@ year_dropdown = get_year_dropdown(budget.year.unique())
 organization_name_dropdown = get_organization_name_dropdown(
     budget[budget.year == year_dropdown.value].organization_name.dropna().unique()
 )
-datatable = get_datatable(budget[budget.year == year_dropdown.value])
+datatable = get_datatable(
+    budget[budget.year == year_dropdown.value].drop(
+        columns=["extra", "year", "organization_name"]
+    )
+)
 app.layout = dbc.Container(
     [
         html.H1("Budget validation"),
