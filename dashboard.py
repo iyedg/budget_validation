@@ -2,7 +2,6 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -98,12 +97,7 @@ app.layout = dbc.Container(
                 ),
             ]
         ),
-        dbc.Row(
-            [
-                dbc.Col(datatable, width=6),
-                dbc.Col(html.Img(id="graph", alt="Graph"), width=6),
-            ]
-        ),
+        dbc.Row([dbc.Col(datatable, width=6), dbc.Col(dcc.Graph(id="graph"), width=6)]),
     ]
 )
 
@@ -149,7 +143,7 @@ def update_datatable(year, organization):
 
 
 @app.callback(
-    Output(component_id="graph", component_property="src"),
+    Output(component_id="graph", component_property="figure"),
     [Input(component_id="table", component_property="data")],
 )
 def update_graph(df):
