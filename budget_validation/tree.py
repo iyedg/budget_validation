@@ -47,7 +47,10 @@ def draw_tree(df, *args, **kwargs):
         showticklabels=False,
     )
     layout = go.Layout(
-        showlegend=False, xaxis=go.layout.XAxis(axis), yaxis=go.layout.YAxis(axis)
+        showlegend=False,
+        xaxis=go.layout.XAxis(axis),
+        yaxis=go.layout.YAxis(axis),
+        hovermode="closest",
     )
     fig = go.Figure(data=[trace_edges, trace_nodes], layout=layout)
     return fig
