@@ -139,7 +139,7 @@ def update_datatable(year, organization):
                 )
             )
         )
-    return filtered_budget.to_dict("rows")
+    return filtered_budget.sort_values("value", ascending=False).to_dict("rows")
 
 
 @app.callback(
