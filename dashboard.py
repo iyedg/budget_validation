@@ -5,7 +5,7 @@ import dash_html_components as html
 import networkx as nx
 import numpy as np
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 from budget_validation.dashboard.layout import (
     get_datatable,
@@ -67,7 +67,7 @@ def get_budget_df():
 budget = get_budget_df()
 
 app = dash.Dash(__name__)
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+app.css.append_css({"external_url": "https://codepen.io/iyedg/pen/gqRLLM.css"})
 app.scripts.config.serve_locally = True
 # app.css.config.serve_locally = True
 
@@ -97,11 +97,34 @@ app.layout = dbc.Container(
                         ]
                     )
                 ),
+                dbc.Col(
+                    dbc.FormGroup(
+                        [dbc.Button("Show table", id="collapse-button", color="info")]
+                    )
+                ),
             ]
         ),
-        dbc.Row([dbc.Col(datatable, width=6), dbc.Col(dcc.Graph(id="graph"), width=6)]),
+        dbc.Row([dbc.Col(dcc.Graph(id="graph"))]),
+        dbc.Row(
+            [
+                dbc.Col(
+                    dbc.Collapse([dbc.Row(dbc.Col(datatable))], id="collapse"), width=12
+                )
+            ]
+        ),
     ]
 )
+
+
+@app.callback(
+    Output("collapse", "is_open"),
+    [Input("collapse-button", "n_clicks")],
+    [State("collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @app.callback(
