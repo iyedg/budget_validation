@@ -67,8 +67,9 @@ def get_budget_df():
 budget = get_budget_df()
 
 app = dash.Dash(__name__)
+app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 app.scripts.config.serve_locally = True
-app.css.config.serve_locally = True
+# app.css.config.serve_locally = True
 
 year_dropdown = get_year_dropdown(budget.year.unique())
 organization_name_dropdown = get_organization_name_dropdown(
@@ -81,6 +82,7 @@ datatable = get_datatable(
 )
 app.layout = dbc.Container(
     [
+        dcc.Interval(id="refresh", interval=200),
         html.H1("Budget validation"),
         dbc.Row(
             [
