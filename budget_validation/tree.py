@@ -62,8 +62,6 @@ def draw_tree(df, *args, **kwargs):
         hovermode="closest",
     )
     fig = go.Figure(data=[trace_edges, trace_nodes], layout=layout)
-    fig.layout.template = "plotly_dark"
-    fig.layout.plot_bgcolor = "#272B30"
-    fig.layout.paper_bgcolor = "#272B30"
+    fig.layout.template = "plotly_white"
     return fig
 

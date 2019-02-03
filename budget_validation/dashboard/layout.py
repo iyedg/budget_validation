@@ -35,10 +35,7 @@ def get_datatable(df):
         id="table",
         columns=[{"name": i, "id": i} for i in df.columns],
         data=df.to_dict("rows"),
-        style_table={"overflowX": "scroll"},
-        style_header={"backgroundColor": "rgb(30, 30, 30)"},
-        style_cell={"backgroundColor": "rgb(50, 50, 50)", "color": "white"},
-        style_as_list_view=True,
+        style_header={"fontFamily": "inherit"},
     )
     return datatable
 
