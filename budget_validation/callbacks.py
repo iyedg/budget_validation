@@ -1,3 +1,4 @@
+from .budget_validation import app
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -15,7 +16,6 @@ from budget_validation.dashboard.layout import (
 from budget_validation.loader import get_worksheet_as_df, merged_table
 from budget_validation.tree import draw_tree
 from budget_validation.utils import clean_currency, list_to_dropdown_options
-
 
 budget_type = get_worksheet_as_df("budget_type")
 budget_by_type = get_worksheet_as_df("budget_by_type")
@@ -43,56 +43,6 @@ budget = merged_table(
         "name",
     ],
     rename_cols={"parent_name": "budget_type_parent_name"},
-)
-
-
-app = dash.Dash(__name__)
-app.css.append_css({"external_url": "https://codepen.io/iyedg/pen/gqRLLM.css"})
-app.scripts.config.serve_locally = True
-# app.css.config.serve_locally = True
-
-year_dropdown = get_year_dropdown(budget.year.unique())
-organization_name_dropdown = get_organization_name_dropdown(
-    budget[budget.year == year_dropdown.value].organization_name.dropna().unique()
-)
-datatable = get_datatable(
-    budget[budget.year == year_dropdown.value].drop(
-        columns=["extra", "year", "organization_name"]
-    )
-)
-app.layout = dbc.Container(
-    [
-        dcc.Interval(id="refresh", interval=200),
-        html.H1("Budget validation"),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.FormGroup([dbc.Label("Year", html_for="year"), year_dropdown])
-                ),
-                dbc.Col(
-                    dbc.FormGroup(
-                        [
-                            dbc.Label("Organization name", html_for="organization"),
-                            organization_name_dropdown,
-                        ]
-                    )
-                ),
-                dbc.Col(
-                    dbc.FormGroup(
-                        [dbc.Button("Show table", id="collapse-button", color="info")]
-                    )
-                ),
-            ]
-        ),
-        dbc.Row([dbc.Col(dcc.Graph(id="graph"))]),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Collapse([dbc.Row(dbc.Col(datatable))], id="collapse"), width=12
-                )
-            ]
-        ),
-    ]
 )
 
 
@@ -159,7 +109,3 @@ def update_graph(df):
         child_name_column="budget_type_name",
         child_value_column="value",
     )
-
-
-if __name__ == "__main__":
-    app.run_server(debug=True)
