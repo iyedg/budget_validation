@@ -1,67 +1,138 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.2'
-#       jupytext_version: 0.8.6
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# %%
-from pathlib import Path
+#%%
+from budget_validation import tree
+from budget_validation.loader import get_worksheet_as_df, merged_table
+from budget_validation.utils import clean_currency, reshape
+import pandas as pd
+import numpy as np
+import networkx as nx
 from pprint import pprint
 
-import pygraphviz as pgv
-from anytree import AsciiStyle, Node, PreOrderIter, RenderTree
-from IPython.display import Image
+#%%
+def get_budget_df():
+    """
+    Return a dataframe for budget validation
+    TODO: improve API, make it DRY and general
+    """
 
-from utils import load_budget
+    drop_cols = [
+        "name_fr",
+        "name_en",
+        "name_ar",
+        "parent_id",
+        "id_x",
+        "budget_type_id",
+        "organization_id",
+        "id_y",
+        "description",
+        "name",
+    ]
+    budget_type = get_worksheet_as_df("budget_type")
+    budget_by_type = get_worksheet_as_df("budget_by_type")
+    budget = (
+        pd.merge(
+            left=budget_type,
+            left_on="name",
+            right=budget_by_type,
+            right_on="budget_type_name",
+        )
+        .drop(columns=drop_cols)
+        .rename(columns={"parent_name": "budget_type_parent_name"})
+        .pipe(
+            lambda df: df.assign(
+                budget_type_parent_name=df["budget_type_parent_name"]
+                .str.strip()
+                .replace("", np.nan)
+            )
+        )
+        .pipe(lambda df: df.assign(value=df["value"].str.strip()))
+        .pipe(
+            lambda df: df.assign(organization_name=df["organization_name"].str.strip())
+        )
+        .pipe(lambda df: df.assign(budget_type_name=df["budget_type_name"].str.strip()))
+        .dropna(subset=["value"])
+        .pipe(lambda df: df.assign(value=clean_currency(df.value)))
+    )
+    return budget
 
-# %%
-budget = load_budget()
-budget.head()
 
-# %%
-budget19 = budget[budget.year == 2019]
-t = budget19[budget19.organization_name == "وزارة النقل"].pipe(
+#%%
+budget = get_budget_df()
+budget15 = budget[budget.year == 2016]
+b = budget15[budget15.organization_name == "وزارة التربية"].pipe(
     lambda df: df.assign(
-        budget_type_parent_name=df["budget_type_parent_name"].fillna("ميزانية الوزارة")
+        budget_type_parent_name=df.budget_type_parent_name.fillna("ميزانية الوزارة")
     )
 )
+b
 
-# %%
-tree = to_tree(t)
-root = tree.popitem()[1].root
+#%%
+t = tree.to_tree(
+    b,
+    parent_name_column="budget_type_parent_name",
+    child_name_column="budget_type_name",
+    child_value_column="value",
+)
 
-# %%
-for node in root.descendants:
-    if len(node.children) > 0:
-        node.gap = np.round(node.value - sum([c.value for c in node.children]), 3)
+#%%
 
-# %%
-print(RenderTree(root, style=AsciiStyle()))
+node_names = list(t.nodes)
+reshaped_names = [reshape(n.decode("utf8")) for n in t.nodes]
+mapping = dict(zip(node_names, reshaped_names))
+
+#%%
+rt = nx.relabel_nodes(t, mapping)
+
+#%%
+dfs_successors = nx.algorithms.traversal.dfs_successors(rt, "ﻣﻴﺰﺍﻧﻴﺔ ﺍﻟﻮﺯﺍﺭﺓ")
+attrs = nx.get_node_attributes(rt, "value")
+
+for node, children in dfs_successors.items():
+    node_value = attrs.get(node)
+    children_value = sum([attrs.get(child) for child in children])
+    print(node)
+    print("value:", node_value)
+    print("children:", children_value)
+    rt.nodes[node]["gap"] = node_value - children_value
+
+pprint(nx.get_node_attributes(rt, "gap"))
+
+#%%
+tree.recursive_sum(t)
 
 
-# %%
-g = pgv.AGraph(strict=False, directed=True)
+#%%
+from budget_validation import tree
+from budget_validation.loader import get_worksheet_as_df, merged_table
+from budget_validation.utils import clean_currency, reshape
+import pandas as pd
+import numpy as np
+import networkx as nx
+from pprint import pprint
+import missingno
 
-# %%
-for node in PreOrderIter(root):
-    if node.is_root:
-        g.add_node(node.name)
-    else:
-        g.add_edge(node.parent.name, node.name)
+budget_type = get_worksheet_as_df("budget_type")
+budget_by_type = get_worksheet_as_df("budget_by_type")
 
-# %%
-g.layout("dot")
-g.draw("./draw.png")
-Image(filename="./draw.png")
-
-# %%
-
+t = merged_table(
+    hierarchy_df=budget_type,
+    hierarchy_df_on="name",
+    values_df=budget_by_type,
+    values_df_on="budget_type_name",
+    transformers={
+        "value": [clean_currency],
+        "budget_type_parent_name": [lambda val: np.nan if val == "" else val.strip()],
+    },
+    drop_cols=[
+        "name_fr",
+        "name_en",
+        "name_ar",
+        "parent_id",
+        "id_x",
+        "budget_type_id",
+        "organization_id",
+        "id_y",
+        "description",
+        "name",
+    ],
+    rename_cols={"parent_name": "budget_type_parent_name"},
+)

@@ -1,20 +1,23 @@
+import inspect
+
 import arabic_reshaper
+import dash
 import numpy as np
 import pandas as pd
 from bidi.algorithm import get_display
-import dash
-import inspect
-from pprint import pprint
+
 
 # !CREDIT: https://github.com/ned2/slapdash/blob/master/src/slapdash/utils.py
 def get_dash_args_from_flask_config(config):
-    """Get a dict of Dash parameters specified in the Flask config
-    
+    """
+    Get a dict of Dash parameters specified in the Flask config.
+
     Arguments:
         config {Flask config} -- configuration loaded by flask
-    
+
     Returns:
         dict -- a dictionary of configuration keys accepted by Dash
+
     """
     # all arg names except for 'self'
     dash_args = set(inspect.getfullargspec(dash.Dash.__init__).args[1:])
@@ -22,13 +25,14 @@ def get_dash_args_from_flask_config(config):
 
 
 def get_dash_runserver_args_from_flask_config(config):
-    """Get a dict of Dash runserver parameters specified in the Flask config
-    
+    """
+    Get a dict of Dash runserver parameters specified in the Flask config.
+
     Arguments:
         config {Flask config} -- configuration loaded by flask
-    
     Returns:
         dict -- a dictionary of configuration keys accepted by Dash run_server
+
     """
     # all arg names except for 'self'
     dash_runserver_args = set(inspect.getfullargspec(dash.Dash.run_server).args[1:])
