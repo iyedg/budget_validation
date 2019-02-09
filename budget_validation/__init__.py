@@ -1,5 +1,6 @@
 from flask import Flask
 from dash import Dash
+from .utils import get_dash_args_from_flask_config
 
 
 def create_flask(filename):
@@ -24,7 +25,11 @@ def create_dash(server):
     Arguments:
         server {Flask} -- a flask instance
     """
-    app = Dash(server=server, suppress_callback_exceptions=True)
+    app = Dash(
+        server=server,
+        suppress_callback_exceptions=True,
+        **get_dash_args_from_flask_config(server.config),
+    )
     server.config.setdefault("TITLE", "Dash")
     app.css.append_css({"external_url": "https://codepen.io/iyedg/pen/gqRLLM.css"})
     app.scripts.config.serve_locally = True
