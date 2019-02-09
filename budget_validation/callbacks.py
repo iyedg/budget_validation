@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from dash.dependencies import Input, Output, State
 
-from budget_validation.dashboard.layout import (
+from budget_validation.layout import (
     get_datatable,
     get_organization_name_dropdown,
     get_year_dropdown,
