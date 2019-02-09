@@ -1,21 +1,15 @@
-from . import create_flask, create_dash
-import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import networkx as nx
 import numpy as np
-import pandas as pd
-from dash.dependencies import Input, Output, State
 
-from budget_validation.layout import (
-    get_datatable,
-    get_organization_name_dropdown,
-    get_year_dropdown,
-)
+from budget_validation.layout import (get_datatable,
+                                      get_organization_name_dropdown,
+                                      get_year_dropdown)
 from budget_validation.loader import get_worksheet_as_df, merged_table
-from budget_validation.tree import draw_tree
-from budget_validation.utils import clean_currency, list_to_dropdown_options
+
+from . import create_dash, create_flask
+from .utils import clean_currency
 
 server = create_flask("../config.py")
 app = create_dash(server)
@@ -102,4 +96,3 @@ with server.app_context():
             ),
         ]
     )
-
