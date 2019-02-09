@@ -21,6 +21,11 @@ def get_worksheet_as_df(worksheet_name):
     return pd.DataFrame(get_worksheet(worksheet_name).get_all_records())
 
 
+def clear_cache():
+    for func in [get_spreadsheet, get_worksheet, get_worksheet_as_df]:
+        func.clear_cache()
+
+
 def merged_table(
     hierarchy_df,
     hierarchy_df_on,
