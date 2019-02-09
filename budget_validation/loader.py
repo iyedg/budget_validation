@@ -1,7 +1,7 @@
-from .auth import get_client
-from .utils import clean_currency
 import pandas as pd
 from cachier import cachier
+
+from .auth import get_client
 
 
 @cachier(pickle_reload=True)
@@ -35,7 +35,8 @@ def merged_table(
     drop_cols=[],
     rename_cols={},
 ):
-    """Link a values table to its corresponding hierarchy table
+    """
+    Link a values table to its corresponding hierarchy table.
 
     Arguments:
         hierarchy_df {DataFrame} -- DataFrame containing the tree structure of the entity
@@ -47,7 +48,6 @@ def merged_table(
         rename_cols {dict} -- A mapping of existing column names and their replacement values, renaming
                               occurs after the merger occurs but before transformers are applied
     """
-
     # TODO transformers by dtype
     merged = (
         pd.merge(
@@ -62,6 +62,4 @@ def merged_table(
     for col_name, transformer_list in transformers.items():
         for transformer in transformer_list:
             merged.loc[:, col_name] = merged.loc[:, col_name].apply(transformer)
-            pass
     return merged
-

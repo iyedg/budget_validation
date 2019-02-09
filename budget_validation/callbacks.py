@@ -1,4 +1,4 @@
-from .budget_validation import app
+from .budget_validation import APP
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -46,7 +46,7 @@ budget = merged_table(
 )
 
 
-@app.callback(
+@APP.callback(
     Output("collapse", "is_open"),
     [Input("collapse-button", "n_clicks")],
     [State("collapse", "is_open")],
@@ -57,7 +57,7 @@ def toggle_collapse(n, is_open):
     return is_open
 
 
-@app.callback(
+@APP.callback(
     Output(component_id="organization", component_property="options"),
     [Input(component_id="year", component_property="value")],
 )
@@ -67,7 +67,7 @@ def update_organization_name_dropdown_options(year):
     )
 
 
-@app.callback(
+@APP.callback(
     Output(component_id="organization", component_property="value"),
     [Input(component_id="year", component_property="value")],
 )
@@ -75,7 +75,7 @@ def update_organization_name_dropdown_value(year):
     return sorted(budget[budget.year == year].organization_name.dropna().unique())[0]
 
 
-@app.callback(
+@APP.callback(
     Output(component_id="table", component_property="data"),
     [
         Input(component_id="year", component_property="value"),
@@ -97,7 +97,7 @@ def update_datatable(year, organization):
     return filtered_budget.sort_values("value", ascending=False).to_dict("rows")
 
 
-@app.callback(
+@APP.callback(
     Output(component_id="graph", component_property="figure"),
     [Input(component_id="table", component_property="data")],
 )
