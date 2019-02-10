@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+import dash_cytoscape as cyto
 import dash_html_components as html
 import dash_table
 import numpy as np
@@ -85,7 +86,6 @@ datatable = get_datatable(
 )
 layout = dbc.Container(
     [
-        dcc.Interval(id="refresh", interval=200),
         html.H1("Budget validation"),
         dbc.Row(
             [
@@ -100,19 +100,22 @@ layout = dbc.Container(
                         ]
                     )
                 ),
-                dbc.Col(
-                    dbc.FormGroup(
-                        [dbc.Button("Show table", id="collapse-button", color="info")]
-                    )
-                ),
             ]
         ),
-        dbc.Row([dbc.Col(dcc.Graph(id="graph"))]),
         dbc.Row(
             [
                 dbc.Col(
-                    dbc.Collapse([dbc.Row(dbc.Col(datatable))], id="collapse"), width=12
-                )
+                    cyto.Cytoscape(
+                        id="tree",
+                        layout={
+                            "name": "breadthfirst",
+                            "roots": "[id='ميزانية الوزارة']",
+                        },
+                        style={"width": "100%", "height": "400px"},
+                        elements=[],
+                    )
+                ),
+                dbc.Col(dbc.Col(datatable)),
             ]
         ),
     ]
