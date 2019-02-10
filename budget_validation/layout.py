@@ -115,7 +115,25 @@ layout = dbc.Container(
                         elements=[],
                     )
                 ),
-                dbc.Col(dbc.Col(datatable)),
+                dbc.Col(
+                    [
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dbc.Alert(
+                                        "This table contains duplicate entries",
+                                        color="danger",
+                                        fade=True,
+                                        is_open=False,
+                                        id="duplicates",
+                                    ),
+                                    width=12,
+                                ),
+                                dbc.Col(datatable),
+                            ]
+                        )
+                    ]
+                ),
             ]
         ),
     ]

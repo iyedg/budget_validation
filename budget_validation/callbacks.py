@@ -74,7 +74,9 @@ def update_datatable(year, organization):
                 )
             )
         )
-    return filtered_budget.sort_values("value", ascending=False).to_dict("rows")
+    return filtered_budget.sort_values(
+        ["budget_type_parent_name", "value", "budget_type_name"], ascending=False
+    ).to_dict("rows")
 
 
 @APP.callback(
@@ -87,3 +89,34 @@ def update_graph(df):
         df, "budget_type_parent_name", "budget_type_name", "value", "ميزانية الوزارة"
     )
     return tree
+
+
+@APP.callback(
+    Output(component_id="duplicates", component_property="is_open"),
+    [
+        Input(component_id="year", component_property="value"),
+        Input(component_id="organization", component_property="value"),
+    ],
+)
+def show_duplicates_error(year, organization):
+    filtered_budget = BUDGET[
+        (BUDGET.year == year) & (BUDGET.organization_name == organization)
+    ]
+    return filtered_budget.budget_type_name.duplicated().any()
+
+
+@APP.callback(
+    Output(component_id="duplicates", component_property="children"),
+    [
+        Input(component_id="year", component_property="value"),
+        Input(component_id="organization", component_property="value"),
+    ],
+)
+def update_duplicates_error(year, organization):
+    # TODO: any entry in the parent column must exist in the children column except for root
+    filtered_budget = BUDGET[
+        (BUDGET.year == year) & (BUDGET.organization_name == organization)
+    ]
+    return list(
+        filtered_budget[filtered_budget.budget_type_name.duplicated()].budget_type_name
+    )
