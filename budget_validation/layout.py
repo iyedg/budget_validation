@@ -113,6 +113,19 @@ layout = dbc.Container(
                         },
                         style={"width": "100%", "height": "400px"},
                         elements=[],
+                        stylesheet=[
+                            {"selector": "node", "style": {"label": "data(label)"}},
+                            {"selector": "[gap > 0]", "style": {"color": "red"}},
+                            {
+                                "selector": "[gap > 0]",
+                                "style": {"background-color": "red"},
+                            },
+                            {"selector": "[gap = 0]", "style": {"color": "green"}},
+                            {
+                                "selector": "[gap = 0]",
+                                "style": {"background-color": "green"},
+                            },
+                        ],
                     )
                 ),
                 dbc.Col(
